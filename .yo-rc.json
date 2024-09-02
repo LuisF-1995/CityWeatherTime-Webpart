@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "18.20.2",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.18.2",
+    "libraryName": "time-weather",
+    "libraryId": "f7d17fb7-7a37-4c7d-97d2-4014c8770519",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "time-weather",
+    "solutionShortDescription": "time-weather description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

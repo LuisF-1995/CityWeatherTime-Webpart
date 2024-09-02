@@ -1,0 +1,60 @@
+@import '~@fluentui/react/dist/sass/References.scss';
+
+.timeWeather {
+  background: none;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+  &.teams {
+    font-family: $ms-font-family-fallbacks;
+  }
+
+  .cardHeader{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .cardContainer{
+    position: relative;
+    height: 150px;
+    width: 300px;
+    overflow: hidden;
+    color: var(--bodyText);
+    background-color: white;
+
+    .tempAndWeatherContainer{
+      height: 100%;
+      overflow: "hidden";
+      padding: 5px;
+      background-color: #EEF2FD;
+      display: flex;
+      flex-direction: column;
+      justify-content: "center";
+      align-items:"center";
+      border-radius: 10px;
+    }
+
+    .delCityButton{
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+  }
+
+  .cardContainer:hover{
+    background-color: #EEF2FD;
+    box-shadow: none;
+
+    .tempAndWeatherContainer{
+      background-color: white;
+    }
+  }
+}
+
+.textColor{
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+}

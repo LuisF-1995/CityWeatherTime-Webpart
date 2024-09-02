@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "TimeWeatherWebpart",
+    "id": "f7d17fb7-7a37-4c7d-97d2-4014c8770519",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "Luis Fernando Rodriguez Ortiz",
+      "websiteUrl": "https://www.linkedin.com/in/luis-fernando-rodriguez-ortiz-engineer/",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.18.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "time-weather description"
+      },
+      "longDescription": {
+        "default": "time-weather description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "time-weather Feature",
+        "description": "The feature that activates elements of the time-weather solution.",
+        "id": "d477864c-4378-4a62-84a3-5c6dfe4a0f6a",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/time-weather.sppkg"
+  }
+}
