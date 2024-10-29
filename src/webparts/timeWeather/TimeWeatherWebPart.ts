@@ -13,7 +13,7 @@ import TimeWeather from './components/TimeWeather';
 import { ITimeWeatherProps } from './components/ITimeWeatherProps';
 
 export interface ITimeWeatherWebPartProps {
-  weatherApiUrl:string;
+  weatherApiSubscriptionKey:string;
 }
 
 export default class TimeWeatherWebPart extends BaseClientSideWebPart<ITimeWeatherWebPartProps> {
@@ -30,7 +30,7 @@ export default class TimeWeatherWebPart extends BaseClientSideWebPart<ITimeWeath
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
         userLoginName: this.context.pageContext.user.loginName,
         context: this.context,
-        weatherApiUrl: this.properties.weatherApiUrl,
+        weatherApiSubscriptionKey: this.properties.weatherApiSubscriptionKey,
       }
     );
 
@@ -109,8 +109,8 @@ export default class TimeWeatherWebPart extends BaseClientSideWebPart<ITimeWeath
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('weatherApiUrl', {
-                  label: 'Weather API endpoint'
+                PropertyPaneTextField('weatherApiSubscriptionKey', {
+                  label: 'Weather API subscription key'
                 })
               ]
             }

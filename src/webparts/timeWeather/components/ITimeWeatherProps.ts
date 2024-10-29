@@ -7,5 +7,5 @@ export interface ITimeWeatherProps {
   hasTeamsContext: boolean;
   userLoginName: string;
   context: WebPartContext;
-  weatherApiUrl:string;
+  weatherApiSubscriptionKey:string;
 }

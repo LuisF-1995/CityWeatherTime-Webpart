@@ -18,7 +18,13 @@ import Swal from 'sweetalert2';
 let secondsCounter:number = 0;
 let intervalId:any;
 
-export default class TimeWeather extends React.Component<ITimeWeatherProps, {citiesInfo:ICityInfo[], editInfo:boolean, showModalAddCity:boolean, disableDelCityButton:boolean}> {
+interface ITimeWeatherStates {
+  citiesInfo:ICityInfo[]; 
+  editInfo:boolean; 
+  showModalAddCity:boolean; 
+  disableDelCityButton:boolean;
+}
+export default class TimeWeather extends React.Component<ITimeWeatherProps, ITimeWeatherStates> {
   private pnp:PNP;
   
   constructor(props:ITimeWeatherProps){
@@ -65,26 +71,31 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, {cit
   private getCityWeather = async():Promise<void> => {
     const listedCitiesRequest:IListedCity[] = await this.getListedCities();
     const citiesInfo:ICityInfo[] = [];
-    for (const city of listedCitiesRequest) {
-      try {
-        const cityWeatherRequest:IWeather = await (await fetch(`${this.props.weatherApiUrl}&lang=es&aqi=no&q=${city.Coordenadas}`)).json(); // Example https://api.weatherapi.com/v1/current.json?key=0797d4607b564ba7ab5164816241908&aqi=no&q=London
-        const cityInfo:ICityInfo = {
-          city: city,
-          weather: cityWeatherRequest,
-          dateTime: new Date()
-        };
-        citiesInfo.push(cityInfo);
-      } catch (error) {
-        console.error(`Error al obtener informacion del clima para ${city.Ciudad}`);
-      }
-    }
 
-    this.setState({citiesInfo:[]}, () => {
-      this.setState({citiesInfo: citiesInfo});
-      clearInterval(intervalId);
-      secondsCounter = 0;
-      this.startMonitoring();
-    });
+    if(this.props.weatherApiSubscriptionKey && this.props.weatherApiSubscriptionKey !== undefined && this.props.weatherApiSubscriptionKey.length > 0){
+      for (const city of listedCitiesRequest) {
+        try {
+          const cityWeatherRequest:IWeather = await (await fetch(`https://api.weatherapi.com/v1/current.json?key=${this.props.weatherApiSubscriptionKey}&lang=es&aqi=no&q=${city.Coordenadas}`)).json(); // Example https://api.weatherapi.com/v1/current.json?key=0797d4607b564ba7ab5164816241908&lang=es&aqi=no&q=London
+          const cityInfo:ICityInfo = {
+            city: city,
+            weather: cityWeatherRequest,
+            dateTime: new Date()
+          };
+          citiesInfo.push(cityInfo);
+        } catch (error) {
+          console.error(`Error al obtener informacion del clima para ${city.Ciudad}`);
+        }
+      }
+  
+      this.setState({citiesInfo:[]}, () => {
+        this.setState({citiesInfo: citiesInfo});
+        clearInterval(intervalId);
+        secondsCounter = 0;
+        this.startMonitoring();
+      });
+    }
+    else
+      console.warn("La webpart TimeWeather tiene el siguiente error: No se puede obtener informacion de clima, porque falta 'Weather API subscription key', asignada por el administrador del sitio en las propiedades al desplegar la webpart.");
   }
 
   private getListedCities = async (): Promise<IListedCity[]> => {
@@ -169,6 +180,17 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, {cit
       hasTeamsContext,
     } = this.props;
 
+    if(!this.props.weatherApiSubscriptionKey || this.props.weatherApiSubscriptionKey === undefined || this.props.weatherApiSubscriptionKey.length === 0){
+      return (
+        <Container maxWidth="lg" className={`${styles.timeWeather} ${hasTeamsContext ? styles.teams : ''}`}>
+          <section >
+            <h2 style={{color:'black', margin:0, padding:0}}>Clima y hora</h2>
+            <h4>No se ha ingresado la llave de subscripcion de weather API, favor contactar al administrador del sitio</h4>
+          </section>
+        </Container>
+      );
+    }
+    
     return (
       <Container maxWidth="lg" className={`${styles.timeWeather} ${hasTeamsContext ? styles.teams : ''}`}>
         <section className={styles.cardHeader} >
@@ -227,6 +249,6 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, {cit
         </Grid>
         <AddNewCityModal context={this.props.context} showModal={this.state.showModalAddCity} closeModal={this.closeAddCityModal} listCitiesInfo={this.state.citiesInfo} getCityWeather={this.getCityWeather}/>
       </Container>
-    );
+    )
   }
 }
