@@ -10,7 +10,7 @@ import AddHomeWorkRoundedIcon from '@mui/icons-material/AddHomeWorkRounded';
 import { ICityInfo } from '../../models/ICityInfo';
 import { climaHoraListName } from '../../../services/Constants';
 import { IListedCity } from '../../models/IListedCity';
-import { CurrentUser } from 'sp-pnp-js/lib/sharepoint/siteusers';
+import { SiteUserProps } from 'sp-pnp-js/lib/sharepoint/siteusers';
 import Swal from 'sweetalert2';
 
 interface IAddNewCityModalStates{
@@ -26,6 +26,7 @@ export interface IAddNewCityModalProps{
     closeModal:() => void;
     listCitiesInfo: ICityInfo[];
     getCityWeather: () => void;
+    currentUser: SiteUserProps;
 }
 
 export default class AddNewCityModal extends React.Component<IAddNewCityModalProps, IAddNewCityModalStates> {
@@ -70,13 +71,13 @@ export default class AddNewCityModal extends React.Component<IAddNewCityModalPro
                 disableAddButton:true
             });
             const existentCity:ICityInfo[] = this.props.listCitiesInfo && this.props.listCitiesInfo.length > 0 ? this.props.listCitiesInfo.filter(city => city?.city?.Ciudad === this.state.selectedCity?.name) : [];
-            const currentUser:CurrentUser|any = await this.pnp.getCurrentUser();
 
             if(!existentCity || existentCity.length === 0){
                 const newCity:IListedCity = {
                     Ciudad: this.state.selectedCity?.name ? this.state.selectedCity.name : '',
                     Coordenadas: this.state.selectedCity?.lat && this.state.selectedCity?.lng ? `${this.state.selectedCity.lat},${this.state.selectedCity.lng}` : '',
-                    UserId: currentUser.Id
+                    UserId: this.props.currentUser.Id,
+                    Global: this.props.currentUser.IsSiteAdmin
                 };
 
                 this.pnp.insertItem(climaHoraListName, newCity)

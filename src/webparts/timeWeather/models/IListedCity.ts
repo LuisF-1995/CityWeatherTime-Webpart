@@ -2,7 +2,8 @@ export interface IListedCity{
     ID?: number;
     Ciudad: string;
     Coordenadas: string;
-    UserId?: number[];
+    UserId?: number;
     AuthorId?: number;
-    EditorId?: number
+    EditorId?: number;
+    Global?: boolean;
 }

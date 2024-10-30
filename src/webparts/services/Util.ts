@@ -9,7 +9,7 @@ import {
     setup,
     Site
 } from 'sp-pnp-js';
-import { CurrentUser } from "sp-pnp-js/lib/sharepoint/siteusers";
+import { SiteUserProps } from "sp-pnp-js/lib/sharepoint/siteusers";
 
 export class PNP {
     public context: WebPartContext;
@@ -60,8 +60,8 @@ export class PNP {
         });
     }
 
-    public async getCurrentUser(): Promise<CurrentUser> {
-        const user = await this.web.currentUser.get();
+    public async getCurrentUser(): Promise<SiteUserProps> {
+        const user:SiteUserProps = await this.web.currentUser.get();
         return user;
     }
 

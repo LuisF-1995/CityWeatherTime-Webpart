@@ -2,7 +2,7 @@ import * as React from 'react';
 import styles from './TimeWeather.module.scss';
 import type { ITimeWeatherProps } from './ITimeWeatherProps';
 import { PNP } from '../../services/Util';
-import { CurrentUser } from 'sp-pnp-js/lib/sharepoint/siteusers';
+import { SiteUserProps } from 'sp-pnp-js/lib/sharepoint/siteusers';
 import { IWeather } from '../models/IWeather';
 import { IListedCity } from '../models/IListedCity';
 import { Box, Container, Grid, IconButton, Paper, Tooltip } from '@mui/material';
@@ -23,6 +23,7 @@ interface ITimeWeatherStates {
   editInfo:boolean; 
   showModalAddCity:boolean; 
   disableDelCityButton:boolean;
+  currentUser: SiteUserProps;
 }
 export default class TimeWeather extends React.Component<ITimeWeatherProps, ITimeWeatherStates> {
   private pnp:PNP;
@@ -35,7 +36,17 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, ITim
       citiesInfo:[],
       editInfo:false,
       showModalAddCity: false,
-      disableDelCityButton: false
+      disableDelCityButton: false,
+      currentUser: {
+        Email: '',
+        Id: 0,
+        IsHiddenInUI: false,
+        IsShareByEmailGuestUser: false,
+        IsSiteAdmin: false,
+        LoginName: '',
+        PrincipalType: 0,
+        Title: ''
+      }
     };
   }
 
@@ -100,8 +111,10 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, ITim
 
   private getListedCities = async (): Promise<IListedCity[]> => {
     try {
-      const currentUser:CurrentUser|any = await this.pnp.getCurrentUser();
-      const listedCitiesReq:IListedCity[] = await this.pnp.getListItems(climaHoraListName, ["ID", "Ciudad", "Coordenadas", "UserId", "AuthorId", "EditorId"], `UserId eq ${currentUser.Id}`, "");
+      const currentUser:SiteUserProps = await this.pnp.getCurrentUser();
+      this.setState({currentUser: currentUser});
+
+      const listedCitiesReq:IListedCity[] = await this.pnp.getListItems(climaHoraListName, ["ID", "Ciudad", "Coordenadas", "UserId", "AuthorId", "EditorId", "Global"], `(UserId eq ${currentUser.Id}) or (Global eq 1)`, "");
       const listedCities: IListedCity[] = listedCitiesReq && listedCitiesReq.length > 0 ?
             listedCitiesReq.filter((item:IListedCity) => item.Coordenadas && item.Coordenadas.length > 0)  // Filtra solo los elementos con Coordenadas válidas
             : [];
@@ -215,39 +228,41 @@ export default class TimeWeather extends React.Component<ITimeWeatherProps, ITim
           }
         </section>
         <Grid container direction="row" justifyContent="flex-start" alignItems="stretch" spacing={2} flexWrap="nowrap" padding={1} margin={0} sx={{overflowX:"auto", columnGap:"15px"}} >
-          {this.state.citiesInfo && this.state.citiesInfo.length > 0 && this.state.citiesInfo.map((cityInfo:ICityInfo, index:number) => (
-            <Grid item key={index} sx={{margin:"0px !important", padding:"0px !important"}}>
-              <Paper sx={{padding:2}} className={styles.cardContainer} >
-                {
-                  this.state.editInfo &&
-                  <Tooltip title='Eliminar ubicación' className={styles.delCityButton}>
-                    <IconButton aria-label="RemoveCity" size='large' color='error' onClick={() => this.removeCity(cityInfo)} disabled={this.state.disableDelCityButton} >
-                      <RemoveCircleOutlineRoundedIcon />
-                    </IconButton>
-                  </Tooltip>
-                }
-                <div style={{margin:0, padding:0, height:"20%", width:"100%", display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
-                  <h4 style={{margin:0, padding:0}}>{cityInfo?.weather?.location?.name}, {cityInfo?.weather?.location?.country}</h4>
-                </div>
-                <Grid container direction="row" justifyContent="space-between" alignItems="stretch" flexWrap="nowrap" padding={0} margin={0} columnGap={1} height="80%" width="100%" >
-                  <Grid item padding={0} margin={0} xs={6} height="100%" paddingBottom={2} >
-                    <Box className={styles.tempAndWeatherContainer}>
-                      <h3>{cityInfo?.weather?.current?.temp_c} °C</h3>
-                      <p>{cityInfo?.weather?.current?.condition?.text}</p>
-                    </Box>
+          {this.state.citiesInfo && this.state.citiesInfo.length > 0 && this.state.citiesInfo.map((cityInfo:ICityInfo, index:number) => {
+            return(
+              <Grid item key={index} sx={{margin:"0px !important", padding:"0px !important"}}>
+                <Paper sx={{padding:2}} className={styles.cardContainer} >
+                  {
+                    this.state.editInfo &&
+                    <Tooltip title='Eliminar ubicación' className={styles.delCityButton}>
+                      <IconButton aria-label="RemoveCity" size='large' color='error' onClick={() => this.removeCity(cityInfo)} disabled={this.state.disableDelCityButton || (cityInfo.city.Global && !this.state.currentUser.IsSiteAdmin)} >
+                        <RemoveCircleOutlineRoundedIcon />
+                      </IconButton>
+                    </Tooltip>
+                  }
+                  <div style={{margin:0, padding:0, height:"20%", width:"100%", display:"flex", justifyContent:"flex-start", alignItems:"center"}}>
+                    <h4 style={{margin:0, padding:0}}>{cityInfo?.weather?.location?.name}, {cityInfo?.weather?.location?.country}</h4>
+                  </div>
+                  <Grid container direction="row" justifyContent="space-between" alignItems="stretch" flexWrap="nowrap" padding={0} margin={0} columnGap={1} height="80%" width="100%" >
+                    <Grid item padding={0} margin={0} xs={6} height="100%" paddingBottom={2} >
+                      <Box className={styles.tempAndWeatherContainer}>
+                        <h3>{cityInfo?.weather?.current?.temp_c} °C</h3>
+                        <p>{cityInfo?.weather?.current?.condition?.text}</p>
+                      </Box>
+                    </Grid>
+                    <Grid item padding={0} margin={0} xs={6} height="100%" paddingBottom={2} >
+                      <Box className={styles.tempAndWeatherContainer}>
+                        <h3>{cityInfo?.dateTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: cityInfo?.weather?.location?.tz_id })}</h3>
+                        <p>{cityInfo?.dateTime.toLocaleDateString('es-CO', {year: 'numeric', month: 'long', day: 'numeric', timeZone: cityInfo?.weather?.location?.tz_id })}</p>
+                      </Box>
+                    </Grid>
                   </Grid>
-                  <Grid item padding={0} margin={0} xs={6} height="100%" paddingBottom={2} >
-                    <Box className={styles.tempAndWeatherContainer}>
-                      <h3>{cityInfo?.dateTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: cityInfo?.weather?.location?.tz_id })}</h3>
-                      <p>{cityInfo?.dateTime.toLocaleDateString('es-CO', {year: 'numeric', month: 'long', day: 'numeric', timeZone: cityInfo?.weather?.location?.tz_id })}</p>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
-          ))}
+                </Paper>
+              </Grid>
+            )
+          })}
         </Grid>
-        <AddNewCityModal context={this.props.context} showModal={this.state.showModalAddCity} closeModal={this.closeAddCityModal} listCitiesInfo={this.state.citiesInfo} getCityWeather={this.getCityWeather}/>
+        <AddNewCityModal context={this.props.context} showModal={this.state.showModalAddCity} closeModal={this.closeAddCityModal} listCitiesInfo={this.state.citiesInfo} getCityWeather={this.getCityWeather} currentUser={this.state.currentUser}/>
       </Container>
     )
   }
